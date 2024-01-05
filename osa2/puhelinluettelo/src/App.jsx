@@ -86,13 +86,22 @@ const App = () => {
           ))
         })
           .catch(error => {
+            if (error.response.data.error) {
+              setErrorMessage(error.response.data.error)
+              setErrorColor('red')
+              setTimeout(() => {
+                setErrorMessage(null)
+                setErrorColor(null)
+              }, 5000)}
+            else {
             setErrorMessage(`${newName} was already removed from server`
             )
             setErrorColor('red')
             setTimeout(() => {
               setErrorMessage(null)
               setErrorColor(null)
-            }, 5000)})
+            }, 5000)}
+          })
           setErrorMessage(`Changed ${newName}'s number`)
           setErrorColor('green')
           setTimeout(() => {
@@ -119,6 +128,15 @@ const App = () => {
             }, 5000)
             setNewName('')
             setNewNumber('')
+          })
+          .catch(error => {
+            console.log(error.response.data)
+            setErrorMessage(error.response.data.error)
+            setErrorColor('red')
+            setTimeout(() => {
+              setErrorMessage(null)
+              setErrorColor(null)
+            }, 5000)
           })
     }
   }
