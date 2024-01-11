@@ -29,6 +29,13 @@ const App = () => {
     }
   }, [])
 
+  const handleBlogsChange = () => {
+    blogService.getAll().then(blogs => {
+      blogs.sort((a, b) => b.likes - a.likes)
+      setBlogs( blogs )}
+    )
+  }
+
   const newBlogForm = () => (
     <Togglable buttonLabel="new blog" ref={newblogFormRef} >
       <NewBlogForm createBlog={addBlog}/>
@@ -41,11 +48,8 @@ const App = () => {
       .create(blogObject)
       .then(returnedBlog => {
         setBlogs(blogs.concat(returnedBlog))
-        blogService.getAll().then(blogs => {
-          blogs.sort((a, b) => b.likes - a.likes)
-          setBlogs( blogs )}
-        )
-        setMessage(`a new blog ${blogObject.title} by ${blogObject.author} added`)
+        handleBlogsChange()
+        setMessage(`New blog ${blogObject.title} by ${blogObject.author} added`)
         setTimeout(() => {
           setMessage(null)
         }, 5000)})
@@ -78,11 +82,31 @@ const App = () => {
     blogService.setToken(null)
   }
 
+  const handleLikeBlog = async (blog) => {
+    const newBlog = {
+      _id: blog.id,
+      user: blog.user,
+      likes: blog.likes+1,
+      author: blog.author,
+      title: blog.title,
+      url: blog.url
+    }
+    await blogService.like(blog.id, newBlog)
+    handleBlogsChange()
+  }
+
+  const handleRemoveButton = async (blog) => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      await blogService.remove(blog.id)
+      handleBlogsChange()
+    }}
+
   const loginForm = () => (
     <form onSubmit={handleLogin}>
       <div>
           username
         <input
+          id='username'
           type="text"
           value={username}
           name="Username"
@@ -92,15 +116,17 @@ const App = () => {
       <div>
           password
         <input
+          id='password'
           type="password"
           value={password}
           name="Password"
           onChange={({ target }) => setPassword(target.value)}
         />
       </div>
-      <button type="submit">login</button>
+      <button type="submit" id="login-button">login</button>
     </form>
   )
+
   if (user === null) {
     return (
       <div>
@@ -120,7 +146,7 @@ const App = () => {
 
       <h2>blogs</h2>
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} setBlogs={setBlogs} username={user.name}/>
+        <Blog key={blog.id} blog={blog} likeBlog={handleLikeBlog} removeBlog={handleRemoveButton} username={user.name}/>
       )}
     </div>
   )

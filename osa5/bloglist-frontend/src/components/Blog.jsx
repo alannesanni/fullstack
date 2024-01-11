@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import blogService from '../services/blogs'
 
-const Blog = ({ blog, setBlogs, username }) => {
+const Blog = ({ blog, likeBlog, removeBlog, username }) => {
   const [moreInfo, setInfo] = useState(false)
 
   const blogStyle = {
@@ -12,42 +12,16 @@ const Blog = ({ blog, setBlogs, username }) => {
     marginBottom: 5
   }
 
-  const likeBlog = async () => {
-    const newBlog = {
-      _id: blog.id,
-      user: blog.user,
-      likes: blog.likes+1,
-      author: blog.author,
-      title: blog.title,
-      url: blog.url
-    }
-    await blogService.like(blog.id, newBlog)
-    await blogService.getAll().then(blogs => {
-      blogs.sort((a, b) => b.likes - a.likes)
-      setBlogs( blogs )
-    }
-    )
-  }
-
-  const removeButton = async () => {
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      await blogService.remove(blog.id)
-      await blogService.getAll().then(blogs => {
-        blogs.sort((a, b) => b.likes - a.likes)
-        setBlogs( blogs )
-      })
-    }}
-
   if (moreInfo) {
     return (
       <div style={blogStyle}>
-        <div>
+        <div className='blog'>
           <p>{blog.title} {blog.author}
             <button onClick={() => setInfo(false)}>hide</button></p>
           <a href={blog.url}>{blog.url}</a>
-          <p>likes {blog.likes} <button onClick={likeBlog}>like</button></p>
+          <p className={blog.title}>likes {blog.likes} <button onClick={() => likeBlog(blog)}>like</button></p>
           <p>{blog.user.name}</p>
-          {blog.user.name === username ? <button onClick={removeButton}>remove</button> : null}
+          {blog.user.name === username ? <button onClick={() => removeBlog(blog)}>remove</button> : null}
 
         </div>
       </div>  )
@@ -56,7 +30,7 @@ const Blog = ({ blog, setBlogs, username }) => {
     return(
       <div style={blogStyle}>
         <div>
-          {blog.title} {blog.author}
+          {blog.title}
           <button onClick={() => setInfo(true)}>view</button>
         </div>
       </div>
